@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student AI Helper</title>
+<style>
+   .input-area{
+    position:sticky;
+    bottom:0;
+
+    background:#f5f5f5;
+
+    padding:8px 0;
+
+    margin-top:4px;
+}
+body.dark-mode .input-area{
+    background:transparent;
+}
+body.dark-mode{
+    background:linear-gradient(180deg,#06112b,#081531,#091a3d);
+}
+.input-wrapper{
+    flex:1;
+}
+    .messages-container{
+    flex:1;
+
+    display:flex;
+    flex-direction:column;
+
+    justify-content:flex-start;
+
+    min-height:0;
+
+    overflow:hidden;
+
+    margin-top:5px;
+}
+    .chat-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+}
+.chat-menu{
+    position:relative;
+}
+
+.menu-btn{
+    background:none;
+    border:none;
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+    padding:5px 10px;
+}
+
+.menu-dropdown{
+    display:none;
+    position:absolute;
+    right:0;
+    top:30px;
+    background:#202123;
+    border-radius:10px;
+    min-width:120px;
+    overflow:hidden;
+    box-shadow:0 0 10px rgba(0,0,0,0.3);
+    z-index:100;
+}
+
+.menu-dropdown div{
+    padding:12px;
+    cursor:pointer;
+    color:white;
+}
+
+.menu-dropdown div:hover{
+    background:#2d2f34;
+}
+
+.chat-menu:hover .menu-dropdown{
+    display:block;
+}
+    #loading{
+    text-align: center;
+    font-size: 22px;
+    margin-top: 20px;
+    color: #2563eb;
+    font-weight: bold;
+}
+.loader{
+    width:20px;
+    height:20px;
+    border:3px solid #d1d5db;
+    border-top:3px solid #2563eb;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin:0 auto 10px auto;
+}
+
+@keyframes spin{
+    0%{
+        transform:rotate(0deg);
+    }
+
+    100%{
+        transform:rotate(360deg);
+    }
+}
+   
+
+   .ai-message{
+    background:white;
+    color:#111827;
+    padding:20px 24px;
+    border-radius:20px;
+    margin:0;
+    max-width:1100px;
+    width:fit-content;
+    font-size:17px;
+    line-height:1.75;
+    border:1px solid #e5e7eb;
+    box-shadow:0 2px 10px rgba(0,0,0,0.04);
+    transition:0.2s ease;
+    border:1px solid #ececec;
+    align-self:flex-start;
+}
+
+.ai-message p{
+    margin:8px 0;
+}
+
+.ai-message ul{
+    margin:8px 0;
+    padding-left:25px;
+}
+
+.ai-message li{
+    margin:5px 0;
+}
+
+        .languages{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+}
+.languages button{
+    background:#e5e7eb;
+    color:#111827;
+    border:none;
+    padding:14px 26px;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+}
+.languages button:hover{
+    background:#d1d5db;
+}
+.languages button:first-child{
+    background:#16a34a;
+    color:white;
+}
+.subjects{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+    
+}
+.subjects button{
+    background:#e5e7eb;
+    color:#111827;
+    border:none;
+    padding:14px 26px;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+    transition:0.25s;
+    transition:0.3s;
+}
+.subjects button:first-child{
+    background:#2563eb;
+    color:white;
+}
+.subjects button:hover{
+    background:#d1d5db;
+    transform:translateY(-2px);
+}
+.languages button:hover{
+    background:#d1d5db;
+}
+   body{
+    height:100vh;
+    overflow:hidden;
+    font-size:16px;
+    background:#f7f7f8;
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin:0;
+}
+        
+
+    .container{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+
+    height:100vh;
+
+    
+
+    padding:0px 30px 20px 30px;
+    box-sizing:border-box;
+}
+   .chat-area{
+    width:auto;
+
+    flex:1;
+
+    display:flex;
+    flex-direction:column;
+
+    min-height:0;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    margin-top:8px;
+
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:40px;
+
+    gap:18px;
+
+    scroll-behavior:smooth;
+}
+    
+h1{
+    text-align:center;
+
+    font-size:72px;
+
+    font-weight:800;
+
+    margin:0px 0 20px 0;
+
+    color:#0f172a;
+}
+form{
+    display:flex;
+    align-items:center;
+
+    width:100%;
+    max-width:1000px;
+
+    margin:auto;
+
+    gap:10px;
+
+    margin-top:4px;
+}
+input[type="text"]{
+    width:100%;
+    padding:18px 26px;
+    border:none;
+    border-radius:35px;
+    font-size:18px;
+    outline:none;
+
+    background:#ffffff;
+
+    color:#111827;
+
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+
+    transition:0.3s;
+    transform:scale(1);
+    max-width: 900px;
+    margin: 0 auto;
+    display: block;
+}
+body.dark-mode input[type="text"]{
+    background:#081531;
+    color:white;
+    box-shadow:0 4px 12px rgba(37,99,235,0.18);
+}
+body.dark-mode input[type="text"]::placeholder{
+    color:#9caecf;
+}
+input[type="text"]:focus{
+    transform:scale(1.01);
+
+    box-shadow:0 0 18px rgba(37,99,235,0.35);
+
+    transition:all 0.3s ease;
+}
+#ask-btn{
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:12px;
+    padding:14px 22px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+ .answer{
+            margin-top:30px;
+            background:#f9fafb;
+            padding:25px;
+            border-radius:15px;
+            line-height:1.8;
+            font-size:18px;
+            color:#111827;
+        }
+        .app-layout{
+    display:flex;
+     align-items:stretch;
+    min-height:100vh;
+}
+
+.sidebar{
+    width:220px;
+    min-width:220px;
+    background:#171717;
+    color:white;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    min-height:100vh;
+    box-sizing:border-box;
+    position:sticky;
+    top:0;
+    height:100vh;
+}
+#dark-mode-toggle{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-bottom:15px;
+}
+body.dark-mode h1{
+    text-shadow:0 0 18px rgba(255,255,255,0.12);
+    color:white;
+}
+
+body.dark-mode input[type="text"]{
+    background:#0f172a;
+    color:white;
+
+    border:none;
+
+    border-radius:30px;
+
+    padding:18px 24px;
+
+    box-shadow:0 4px 14px rgba(0,0,0,0.35);
+}
+
+body.dark-mode input[type="text"]::placeholder{
+    color:#9ca3af;
+}
+.new-chat-btn{
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+    color:white;
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+
+    transition:0.3s;
+}
+.new-chat-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(37,99,235,0.3);
+}
+
+.chat-item{
+    flex:1;
+    background:#1f2937;
+    color:white;
+    padding:16px;
+    border-radius:14px;
+    cursor:pointer;
+    transition:0.2s;
+    font-size:18px;
+    font-weight:500;
+}
+
+.chat-item:hover{
+    background:#374151;
+}
+
+.active-chat{
+    background:#2f2f2f;
+}
+.user-message{
+    background:#2563eb;
+    color:white;
+
+    padding:12px 18px;
+
+    border-radius:18px;
+
+    margin:0 0 10px auto;
+    margin-left:auto;
+
+    max-width:900px;
+    width:fit-content;
+
+    font-size:17px;
+    font-weight:500;
+    line-height:1.5;
+
+    box-shadow:0 4px 14px rgba(37,99,235,0.2);
+
+    display:block;
+}
+.response-time{
+    font-size:13px;
+    margin-top:8px;
+    color:#7c8798;
+    font-weight:500;
+}
+body.dark-mode .response-time{
+    color:#9ca3af;
+}
+@media(max-width:768px){
+    .app-layout{
+    flex-direction:column;
+    align-items:stretch;
+}
+
+.sidebar{
+    width:100%;
+    min-width:100%;
+    height:auto;
+    padding:15px;
+    box-sizing:border-box;
+}
+.container{
+    width:100%;
+    max-width:1200px;
+    padding:15px;
+}
+
+    .chat-area{
+    padding-right:5px;
+}
+
+   
+
+    textarea{
+    flex:1;
+
+    padding:18px 20px;
+
+    border-radius:18px;
+
+    border:1px solid #d1d5db;
+
+    font-size:17px;
+
+    resize:none;
+
+    outline:none;
+
+    background:white;
+}
+
+   button{
+    background:#2563eb;
+    color:white;
+
+    border:none;
+
+    border-radius:16px;
+
+    padding:16px 22px;
+
+    font-size:16px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:0.2s;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+}
+.dark-mode{
+    background:#111827;
+    color:white;
+}
+
+.dark-mode .container{
+    background:#111827;
+}
+
+.dark-mode .ai-message{
+    background:#1f2937;
+    color:white;
+    border:1px solid #374151;
+}
+
+.dark-mode input{
+    background:white;
+    color:black;
+    border:1px solid #374151;
+    .dark-mode input{
+    border:1px solid #d1d5db;
+}
+}
+
+.dark-mode .messages-container{
+    background:#111827;
+}
+.dark-mode{
+    background:#0f172a;
+    color:white;
+}
+
+.dark-mode .container{
+    background:#0f172a;
+}
+
+.dark-mode .ai-message{
+    background:#1e293b;
+    color:white;
+}
+
+.dark-mode .user-message{
+    background:#2563eb;
+    color:white;
+}
+button:hover{
+    transform:translateY(-2px);
+    opacity:0.92;
+}
+ </style>
+    </head>
+<body>
+ <div class="app-layout">
+
+    <div class="sidebar">
+    <button id="dark-mode-toggle">🌙 Dark Mode</button>
+        <a href="/new_chat">
+    <button class="new-chat-btn">+ New Chat</button>
+</a>
+
+        {% for chat in chats %}
+<div class="chat-row">
+
+    <div
+        class="chat-item {% if chat == current_chat %}active-chat{% endif %}"
+        onclick="window.location.href='/chat/{{ chat }}'"
+    >
+        {{ chat }}
+    </div>
+
+    <div class="chat-menu">
+        <button class="menu-btn">⋮</button>
+
+        <div class="menu-dropdown">
+            <div onclick="renameChat('{{ chat }}')">
+                Rename
+            </div>
+
+            <div onclick="window.location.href='/delete_chat/{{ chat }}'">
+                Delete
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endfor %}
+
+    </div>
+
+    <div class="container">
+     <h1>Student AI Helper</h1>
+<div class="subjects">
+<button type="button" onclick="setSubject('Science', this)">Science</button>
+<button type="button" onclick="setSubject('Maths', this)">Maths</button>
+<button type="button" onclick="setSubject('History', this)">History</button>
+<button type="button" onclick="setSubject('English', this)">English</button>
+</div>
+<div class="languages">
+ <button type="button" onclick="setLanguage('English', this)">English</button>
+ <button type="button" onclick="setLanguage('Hindi', this)">Hindi</button>
+</div>
+<div class="input-area">
+ <form method="POST">
+    <input type="hidden" name="language" id="language" value="{{ selected_language or 'English' }}">
+
+<input type="hidden" name="subject" id="subject" value="{{ selected_subject or 'Science' }}">
+            <div class="input-wrapper">
+
+    <input
+        type="text"
+        name="question"
+        placeholder="Ask your question..."
+        required
+    >
+<button type="submit" id="ask-btn" style="display:none;">
+    Ask
+</button>
+</div>
+</form>
+</div>
+<div id="loading" style="display:none;">
+    <div class="loader"></div>
+    AI is thinking...
+</div>
+<div class="messages-container">
+<div class="chat-area">
+{% for chat in chat_history %}
+
+<div class="user-message">
+    <strong>You:</strong><br>
+    {{ chat.question }}
+</div>
+
+<div class="ai-message">
+    <div class="typing-text">
+        {{ chat.answer|safe }}
+        
+    </div>
+</div>
+<div class="response-time">
+    ⚡ {{ chat.response_time }}s
+</div>
+{% endfor %}
+</div>
+</div>
+<script>
+function setSubject(subject, button){
+document.getElementById("subject").value = subject
+ let buttons = document.querySelectorAll(".subjects button")
+buttons.forEach(btn => {
+        btn.style.background = "#e5e7eb"
+        btn.style.color = "#111827"
+    })
+ button.style.background = "#2563eb"
+    button.style.color = "white"
+}
+function setLanguage(language, button){
+ document.getElementById("language").value = language
+let buttons = document.querySelectorAll(".languages button")
+ buttons.forEach(btn => {
+        btn.style.background = "#e5e7eb"
+        btn.style.color = "#111827"
+    })
+ button.style.background = "#16a34a"
+    button.style.color = "white"
+}
+document.querySelector("form").addEventListener("submit", function(){
+
+    document.getElementById("loading").style.display = "block";
+
+    let askBtn = document.getElementById("ask-btn");
+
+    if(askBtn){
+        askBtn.disabled = true;
+        askBtn.innerText = "Thinking...";
+    }
+
+});
+window.onload = function(){
+
+    let currentSubject = document.getElementById("subject").value
+    let currentLanguage = document.getElementById("language").value
+
+    document.querySelectorAll(".subjects button").forEach(btn => {
+
+        if(btn.innerText === currentSubject){
+
+            btn.style.background = "#2563eb"
+            btn.style.color = "white"
+
+        }
+
+    })
+
+    document.querySelectorAll(".languages button").forEach(btn => {
+
+        if(btn.innerText === currentLanguage){
+
+            btn.style.background = "#16a34a"
+            btn.style.color = "white"
+
+        }
+
+    })
+
+    let chatArea = document.querySelector(".chat-area")
+
+if(chatArea){
+
+    setTimeout(() => {
+
+        chatArea.scrollTop = chatArea.scrollHeight
+
+    }, 100)
+
+}
+}
+function toggleDarkMode(){
+
+    document.body.classList.toggle("dark-mode")
+
+}
+const darkModeBtn = document.getElementById("dark-mode-toggle")
+
+darkModeBtn.addEventListener("click", () => {
+
+    document.body.classList.toggle("dark-mode")
+
+})
+</script>
+</div>
+
+</body>
+</html>
